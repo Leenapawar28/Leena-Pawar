@@ -6,6 +6,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 import { projects } from '@/lib/projects';
+import { setScrubPaused } from '@/lib/scrub-motion';
 import { createGalleryDriver, createGalleryTimeline, GALLERY_DURATION, galleryTime } from '@/lib/gallery-motion';
 import ProjectCaseStudy, { type SelectedProject } from './ProjectCaseStudy';
 
@@ -18,7 +19,7 @@ export default function Projects() {
   const drag = useRef({ x: 0, progress: 0, left: 0, pointer: -1, moved: false });
   const [selection, setSelection] = useState<SelectedProject | null>(null);
   const close = useCallback(() => {
-    standalone.current?.getTween()?.resume();
+    setScrubPaused(standalone.current, false);
     root.current?.dispatchEvent(new CustomEvent('gallery-overlay', { detail: false, bubbles: true }));
     setSelection(null);
   }, []);
@@ -100,7 +101,7 @@ export default function Projects() {
   };
   const openProject = (project: typeof projects[number], source: HTMLButtonElement) => {
     navigation.current?.kill();
-    standalone.current?.getTween()?.pause();
+    setScrubPaused(standalone.current, true);
     root.current?.dispatchEvent(new CustomEvent('gallery-overlay', { detail: true, bubbles: true }));
     setSelection({ project, source, rect: source.getBoundingClientRect() });
   };
@@ -136,13 +137,13 @@ export default function Projects() {
   };
 
   return <section ref={root} id="work" className="section work project-gallery" data-gallery-mode="native" aria-labelledby="work-title">
-    <div className="gallery-heading"><div className="section-label"><span>04 / Selected work</span><span>Space for the stories behind the build</span></div><div className="gallery-title-row"><h2 id="work-title">Work, in focus.</h2><p>Case studies are being curated.<br />A considered selection, coming soon.</p></div></div>
+    <div className="gallery-heading"><div className="section-label"><span>04 / Selected work</span><span>Space for the stories behind the build</span></div><div className="gallery-title-row"><h2 id="work-title">Work, in focus.</h2><p>Selected client work.<br />The stories behind the build.</p></div></div>
     <div className="gallery-window" onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={release} onPointerCancel={release}
       onDragStart={event => event.preventDefault()} onClickCapture={event => { if (drag.current.moved && event.detail > 0) { drag.current.moved = false; event.preventDefault(); event.stopPropagation(); } }}
       onScroll={event => { if (root.current?.dataset.galleryMode === 'native') driver.current?.render(event.currentTarget.scrollLeft / (event.currentTarget.scrollWidth - event.currentTarget.clientWidth || 1)); }}>
-      <div className="gallery-track">{projects.map((project, i) => <article key={project.id} className="gallery-panel" aria-label={`${project.title}, ${i + 1} of ${projects.length}`}><div className="gallery-surface">
-        <button className="gallery-image-button" type="button" aria-label={`View ${project.title} case study`} onClick={event => openProject(project, event.currentTarget)}>
-          <Image src={project.coverImage} alt={`${project.title}: ${project.category} concept artwork`} fill sizes="(max-width: 767px) 78vw, 32vw" draggable={false} onLoad={refreshImages} />
+      <div className="gallery-track">{projects.map((project, i) => <article key={project.id} className="gallery-panel" data-project={project.id} data-showcase={project.imageAspectRatio ? 'true' : undefined} aria-label={`${project.title}, ${i + 1} of ${projects.length}`}><div className="gallery-surface">
+        <button className="gallery-image-button" style={project.imageAspectRatio ? { aspectRatio: project.imageAspectRatio } : undefined} type="button" aria-label={`View ${project.title} case study`} onClick={event => openProject(project, event.currentTarget)}>
+          <Image src={project.coverImage} alt={`${project.title}: ${project.category}`} fill sizes="(max-width: 767px) 78vw, 32vw" draggable={false} onLoad={refreshImages} />
           <span className="gallery-view">View Project ↗</span>
         </button><span className="gallery-reflection" style={{ backgroundImage: `url('${project.coverImage}')` }} aria-hidden="true" />
       </div></article>)}</div>

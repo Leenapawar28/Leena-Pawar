@@ -14,7 +14,6 @@ export default function Motion() {
       if (!hero || !portal) return;
       // Entrance and scroll own separate wrappers, so their transforms never compete.
       gsap.timeline({ defaults: { ease: 'power3.out' } })
-        .from('.site-header', { opacity: 0, duration: .8 }, 0)
         .from('.eyebrow', { opacity: 0, y: 12, duration: .7 }, .15)
         .from('.name-line', { yPercent: 115, duration: 1.1, stagger: .17 }, .35)
         .from('.portal-entrance', { scale: .9, opacity: 0, duration: 1.5 }, .3)
@@ -34,7 +33,7 @@ export default function Motion() {
         defaults: { ease: 'none' },
         scrollTrigger: {
           trigger: hero, start: 'top top', end: () => `+=${window.innerHeight * 2.4}`,
-          pin: '.hero-stage', pinSpacing: true, scrub: .7, invalidateOnRefresh: true,
+          pin: '.hero-stage', pinSpacing: true, scrub: true, invalidateOnRefresh: true,
           refreshPriority: 1,
         },
       });

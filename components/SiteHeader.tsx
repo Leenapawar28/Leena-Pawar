@@ -23,8 +23,12 @@ export default function SiteHeader() {
     const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
     window.addEventListener('scroll', schedule, { passive: true });
     window.addEventListener('resize', schedule);
+    // Scene changes can finish after the last scroll event.
+    const observer = new MutationObserver(schedule);
+    const journeyStage = document.querySelector('.journey-stage');
+    if (journeyStage) observer.observe(journeyStage, { attributes: true, attributeFilter: ['class', 'data-scene'] });
     update();
-    return () => { cancelAnimationFrame(frame); window.removeEventListener('scroll', schedule); window.removeEventListener('resize', schedule); };
+    return () => { observer.disconnect(); cancelAnimationFrame(frame); window.removeEventListener('scroll', schedule); window.removeEventListener('resize', schedule); };
   }, []);
   useEffect(() => {
     if (!open) return;
@@ -47,10 +51,10 @@ export default function SiteHeader() {
   return <header ref={header} className="site-header">
     <a className="wordmark" href="#home" aria-label="Leena Pawar home" onClick={() => setOpen(false)}><BrandMark /></a>
     <nav className="desktop-nav" aria-label="Main navigation"><a href="#about" aria-current={active === 'about' ? 'location' : undefined}>About</a><a href="#experience" aria-current={active === 'experience' ? 'location' : undefined}>Experience</a><a href="#work" aria-current={active === 'work' ? 'location' : undefined}>Work</a></nav>
-    <a className="header-contact" href="#contact" onClick={() => setOpen(false)}>Let’s talk <span aria-hidden="true">↗</span></a>
+    <a className="header-contact" href="/contact" onClick={() => setOpen(false)}>Let’s talk <span aria-hidden="true">↗</span></a>
     <button ref={menuButton} type="button" className="mobile-menu-toggle" aria-expanded={open} aria-controls="mobile-navigation" onClick={() => setOpen(value => !value)}>{open ? 'Close' : 'Menu'} <span aria-hidden="true">{open ? '−' : '+'}</span></button>
     <nav id="mobile-navigation" className="mobile-nav" aria-label="Mobile navigation" hidden={!open}>
-      {[['About', 'about'], ['Experience', 'experience'], ['Skills', 'skills'], ['Work', 'work'], ['Contact', 'contact']].map(([label, id]) => <a key={id} href={`#${id}`} aria-current={active === id ? 'location' : undefined} onClick={() => setOpen(false)}>{label}<span aria-hidden="true">↗</span></a>)}
+      {[['About', 'about'], ['Experience', 'experience'], ['Skills', 'skills'], ['Work', 'work'], ['Contact', 'contact']].map(([label, id]) => <a key={id} href={id === 'contact' ? '/contact' : `#${id}`} aria-current={active === id ? 'location' : undefined} onClick={() => setOpen(false)}>{label}<span aria-hidden="true">↗</span></a>)}
     </nav>
   </header>;
 }

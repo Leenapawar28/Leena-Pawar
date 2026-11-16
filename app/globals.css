@@ -675,7 +675,7 @@ body:before{content:'';position:fixed;inset:0;height:100lvh;z-index:-1;pointer-e
 @media(prefers-reduced-motion:reduce){.about-heading-orbit{display:none}.site-header .desktop-nav a:after,.journey-header nav a:after,.journey-navigation button:after,.about-play,.mobile-nav a{transition:none}}
 .site-header .header-contact:is(:hover,:focus-visible),.site-header .mobile-nav a:is(:hover,:focus-visible){opacity:1}
 .journey-header nav a[aria-current]:after{left:0;right:0;bottom:-22px;height:2px;background:linear-gradient(90deg,transparent,#f5b77b 30%,#ffe0ae 55%,transparent);box-shadow:0 0 12px #e9a65c66}
-@media(min-width:768px){html{scroll-padding-top:110px}.site-header{position:fixed;background:#080604d9}body:has(.journey-enabled .journey-visible) .site-header{visibility:hidden;pointer-events:none}}
+@media(min-width:768px){html{scroll-padding-top:110px}.site-header{position:fixed;background:#080604d9}}
 
 /* Shared upright monogram and portrait card with non-overlapping grid tracks. */
 .brand-mark{font-family:var(--font-portfolio),Arial,sans-serif;font-weight:400;font-style:normal;letter-spacing:-.08em;text-transform:none;line-height:1;transform:none}
@@ -738,3 +738,42 @@ body:before{content:'';position:fixed;inset:0;height:100lvh;z-index:-1;pointer-e
 @media(max-width:1100px){.journey .about-highlights li{flex-direction:row;align-items:center;padding:12px 16px;gap:14px}.journey .about-highlights li>div{display:flex;align-items:center;flex-wrap:wrap;gap:6px 16px}}
 @media(max-width:767px){.about-card-caption{font-size:11px;letter-spacing:.08em}.journey .about-highlights{gap:12px}.journey .about-highlights li{padding:17px}.journey .about-highlights li>div{display:block}.journey .about-highlights .mono{margin-top:4px}}
 @media(prefers-reduced-motion:reduce){.journey .about .about-portrait-card{transform:none}.journey .about-highlights li{transition:none}}
+
+/* Calligraphic gold identity paired with a classic, readable display serif. */
+:root{--font-headings:Georgia,'Times New Roman',serif}
+h1,h2,h3,h4,h5,h6{font-family:var(--font-headings);font-weight:400;letter-spacing:-.035em}
+.hero-copy h1{font-family:var(--font-headings);font-size:clamp(80px,10.8vw,174px);letter-spacing:-.055em;line-height:.94}
+.hero-copy .name-mask{padding-bottom:.1em;margin-bottom:-.1em}
+.contact h2 em{font-family:var(--font-headings);font-style:italic}
+.wordmark{display:inline-flex;align-items:center;letter-spacing:normal}
+.wordmark .brand-mark{display:block;width:130px;height:49px;font-size:inherit;overflow:visible}
+footer .wordmark .brand-mark{width:145px;height:55px}
+@media(max-width:767px){.wordmark .brand-mark{width:100px;height:38px}.hero-copy h1{font-size:clamp(76px,18vw,130px);line-height:.96}footer .wordmark .brand-mark{width:120px;height:46px}}
+
+/* Lenis owns interpolation; native CSS smoothing must not add a second delay. */
+html.lenis,html.lenis body{height:auto}
+html.lenis.lenis-smooth{scroll-behavior:auto!important}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+.case-overview>h3.mono{margin:0;font-weight:400;letter-spacing:.075em;line-height:1.6;font-family:var(--font-portfolio),Arial,sans-serif}
+.case-details h3.mono{margin:0;font-family:var(--font-portfolio),Arial,sans-serif;font-weight:400;letter-spacing:.075em;line-height:1.6}
+.case-details .case-feature-list{list-style:disc;padding-left:20px}
+
+/* Keep the supplied website showcase intact, including its embedded typography. */
+.journey .gallery-panel[data-showcase='true'] .gallery-image-button{aspect-ratio:1672 / 941;background:#eee5db}
+.gallery-panel[data-showcase='true'] .gallery-image-button>img{object-fit:contain}
+.gallery-panel[data-showcase='true'] .gallery-image-button:is(:hover,:focus-visible)>img{transform:none}
+.case-hero img,.case-shared-image img{object-fit:contain}
+.case-content{max-width:1280px}
+.case-header{position:sticky;top:0;z-index:20;background:#080604f5;padding-top:18px}
+
+.case-facts{display:grid;grid-template-columns:2fr 1.2fr .6fr;gap:28px;margin:0 0 32px;padding:22px 0;border-block:1px solid #c49a7330}
+.case-facts dt{font-size:12px;color:#b2987a;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+.case-facts dd{font-size:16px;line-height:1.5;color:#ded3c5;margin:0}
+@media(max-width:767px){.case-facts{grid-template-columns:1fr;gap:18px}.case-title-block h2{overflow-wrap:anywhere}}
+
+.case-facts-expanded{grid-template-columns:.8fr 1.5fr 1.2fr .5fr}
+@media(max-width:900px){.case-facts-expanded{grid-template-columns:1fr 1fr}}
+@media(max-width:767px){.case-facts-expanded{grid-template-columns:1fr}}
+
+.freelance-contact-link{display:inline-block;font-size:16px;color:#d0af88;border-bottom:1px solid #c6a07950;padding-bottom:6px;margin:0 0 24px}.freelance-contact-link:hover{color:#f0d8bb}

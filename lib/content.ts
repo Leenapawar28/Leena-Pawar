@@ -13,4 +13,4 @@ export const skills = [
   { name: 'Tools & Quality', items: ['Git / GitHub', 'Figma / Adobe XD', 'GSAP / jQuery', 'Lighthouse / PageSpeed', 'SEO Optimization', 'Deployment & Hosting', 'Cross-Browser Testing'] },
 ];
 export { projects } from './projects';
-export const socials: { label: string; href: string | null }[] = [{ label: 'LinkedIn', href: null }, { label: 'GitHub', href: null }];
+export const socials: { label: string; href: string | null }[] = [{ label: 'LinkedIn', href: 'https://www.linkedin.com/in/leena-pawar-2a3b88239/' }, { label: 'GitHub', href: 'https://github.com/Leenapawar28/' }];

@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import gsap from 'gsap';
-import BrandMark from './BrandMark';
+import { getSmoothScroll } from '@/lib/smooth-scroll';
+import { setScrubPaused } from '@/lib/scrub-motion';
 import { createAboutTimeline } from '@/lib/about-motion';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
@@ -40,7 +41,15 @@ export default function Journey({ children }: { children: ReactNode }) {
       setCinematic(true);
       let disposed = false;
       let frame = 0;
-      let navigation: gsap.core.Tween | undefined;
+      let navigation: { kill: () => void } | undefined;
+      const scrollToPosition = (target: number, duration: number, onComplete?: () => void, ease = 'power2.inOut') => {
+        const lenis = getSmoothScroll();
+        if (!lenis) return gsap.to(window, {
+          scrollTo: { y: target, autoKill: true }, duration, ease, overwrite: 'auto', onComplete,
+        });
+        lenis.scrollTo(target, { duration, lerp: 0, easing: gsap.parseEase(ease), onComplete });
+        return { kill: () => lenis.scrollTo(lenis.scroll, { immediate: true }) };
+      };
       const setActiveScene = (index: number) => {
         if (index === activeRef.current) return;
         activeRef.current = index;
@@ -56,7 +65,7 @@ export default function Journey({ children }: { children: ReactNode }) {
       const timeline = gsap.timeline({
         scrollTrigger: {
           trigger: container, start: 'top top', end: () => `+=${window.innerHeight * (totalDuration / STEP) * 3}`,
-          pin: viewport, pinSpacing: true, scrub: .8, invalidateOnRefresh: true,
+          pin: viewport, pinSpacing: true, scrub: true, invalidateOnRefresh: true,
           onUpdate(self) { viewport.classList.toggle('journey-visible', self.scroll() >= self.start); },
           onLeaveBack() { viewport.classList.remove('journey-visible'); },
           onEnter() { viewport.classList.add('journey-visible'); },
@@ -113,16 +122,14 @@ export default function Journey({ children }: { children: ReactNode }) {
           scenes[index].focus({ preventScroll: true });
         };
         if (immediate) {
-          window.scrollTo({ top: target, behavior: 'instant' });
+          const lenis = getSmoothScroll();
+          if (lenis) lenis.scrollTo(target, { immediate: true });
+          else window.scrollTo({ top: target, behavior: 'instant' });
           timeline.time(settle);
           viewport.classList.add('journey-visible');
           focusScene();
         } else {
-          navigation = gsap.to(window, {
-            scrollTo: { y: target, autoKill: true },
-            duration: Math.min(4.2, 2.8 + Math.abs(index - activeRef.current) * .2),
-            ease: 'power2.inOut', overwrite: 'auto', onComplete: focusScene,
-          });
+          navigation = scrollToPosition(target, Math.min(4.2, 2.8 + Math.abs(index - activeRef.current) * .2), focusScene);
         }
       };
       const onAnchor = (event: MouseEvent) => {
@@ -142,8 +149,7 @@ export default function Journey({ children }: { children: ReactNode }) {
         if (!st || index < 0 || category < 0 || category > 2) return;
         navigation?.kill();
         const time = starts[index] + 1.2 + category * SKILL_STEP + HOLD;
-        navigation = gsap.to(window, { scrollTo: { y: st.start + (st.end - st.start) * time / timeline.duration(), autoKill: true },
-          duration: 2.8, ease: 'power2.inOut', overwrite: 'auto' });
+        navigation = scrollToPosition(st.start + (st.end - st.start) * time / timeline.duration(), 2.8);
       };
       const onGalleryNavigate = (event: Event) => {
         const { progress, immediate } = (event as CustomEvent<{ progress: number; immediate: boolean }>).detail;
@@ -152,13 +158,12 @@ export default function Journey({ children }: { children: ReactNode }) {
         if (!st || index < 0) return;
         navigation?.kill();
         const time = starts[index] + 1.2 + galleryTime(progress);
-        navigation = gsap.to(window, { scrollTo: { y: st.start + (st.end - st.start) * time / timeline.duration(), autoKill: true },
-          duration: immediate ? .18 : 1.4, ease: 'power2.out', overwrite: 'auto' });
+        navigation = scrollToPosition(st.start + (st.end - st.start) * time / timeline.duration(), immediate ? .18 : 1.4, undefined, 'power2.out');
       };
       const onGalleryOverlay = (event: Event) => {
         const open = (event as CustomEvent<boolean>).detail;
-        if (open) { navigation?.kill(); timeline.scrollTrigger?.getTween()?.pause(); }
-        else timeline.scrollTrigger?.getTween()?.resume();
+        if (open) navigation?.kill();
+        setScrubPaused(timeline.scrollTrigger, open);
       };
       document.addEventListener('click', onAnchor);
       container.addEventListener('journey-navigate', onNavigate);
@@ -205,13 +210,13 @@ export default function Journey({ children }: { children: ReactNode }) {
     <div ref={stage} className="journey-stage" data-scene={ids[active]}>
       {children}
       <div className="journey-controls" hidden={!cinematic}>
-        <div className="journey-header"><a className="wordmark" href="#home" aria-label="Leena Pawar home"><BrandMark /></a><nav aria-label="Section navigation"><a href="#about" aria-current={active === 0 ? 'location' : undefined}>About</a><a href="#experience" aria-current={active === 1 ? 'location' : undefined}>Experience</a><a href="#work" aria-current={active === 3 ? 'location' : undefined}>Work</a></nav><a className="header-contact" href="#contact">Let’s talk ↗</a></div>
+
         <div className="journey-topline mono"><span>Inside / <span aria-live="polite">{labels[active]}</span></span><button type="button" onClick={() => setReading(true)}>Reading mode ↗</button></div>
         <nav aria-label="Journey scenes" className="journey-navigation">{labels.map((label, i) => <button type="button" key={label} aria-current={i === active ? 'step' : undefined} onClick={() => go(i)}><span className="mono">0{i + 1}</span><span>{label}</span></button>)}</nav>
 
         <div className="journey-progress"><div className="journey-progress-fill" /></div>
       </div>
     </div>
-    {!cinematic && <div className="reading-controls mono"><span>Reading view</span>{reading && <button type="button" onClick={() => { setReading(false); window.scrollTo({ top: 0, behavior: 'instant' }); }}>Restart journey ↑</button>}</div>}
+    {!cinematic && <div className="reading-controls mono"><span>Reading view</span>{reading && <button type="button" onClick={() => { setReading(false); const lenis = getSmoothScroll(); if (lenis) lenis.scrollTo(0, { immediate: true }); else window.scrollTo({ top: 0, behavior: 'instant' }); }}>Restart journey ↑</button>}</div>}
   </div>;
 }
